@@ -6,7 +6,8 @@ Initial mapping of using NodeJS and Yargs as the body of the programming.
 
 ## Basic Functionaility
 
-wcli search -
+wcli search <lat> <lot>
+alias s
 Given Lat and Lot, search for city and state, and save it to storage
 If can't find it, list reason why, save it to storage, give error if user try to do again
 

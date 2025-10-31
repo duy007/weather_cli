@@ -1,0 +1,26 @@
+{
+  "name": "weather_cli",
+  "bin": {
+    "wcli": "./index.js"
+  },
+  "version": "1.0.0",
+  "description": "a weather app made in NodeJS for the CLI",
+  "homepage": "https://github.com/duy007/weather_cli#readme",
+  "bugs": {
+    "url": "https://github.com/duy007/weather_cli/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/duy007/weather_cli.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "yargs": "^18.0.0"
+  }
+}
