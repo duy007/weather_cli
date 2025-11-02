@@ -20,3 +20,7 @@ return save zone
 
 wcli all
 return all current forcast of all zone
+
+## API
+
+This program will use the National Weather Service (NWS) API to get its forecast.

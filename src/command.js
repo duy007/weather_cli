@@ -19,6 +19,14 @@ yargs(hideBin(process.argv))
             )
         }, async (args) => {
             console.log(args.lat + " " + args.lot)
+            const response = await fetch(`https://api.weather.gov/points/${args.lat},${args.lot}`, {
+                method: "GET",
+                headers: {
+                    "accept": "application/geo+json"
+                }
+            })
+            const result = await response.json()
+            console.log(result)
         }
     )
     .command(["get <name>", "g <name>"], "Get the forest of the given location if its lat and lot are saved in storage.", 
