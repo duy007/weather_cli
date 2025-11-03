@@ -1,19 +1,19 @@
 import { insertDB, readDB } from "../DB/db.js"
 
-export const newZone = async (city, state, lat, lot, gridX, gridY, status, detail) => {
+export const newZone = async (city, state, lat, lot, gridX, gridY, gridId, status, detail) => {
     const newZone = {
-      city: city,
-      state: state,
-      lat: lat,
-      lot: lot,
-      gridX: gridX,
-      gridY: gridY,
-      gridID: gridID,
-      status: status,
-      detail: detail
+        id: Date.now(),
+        city: city,
+        state: state,
+        lat: lat,
+        lot: lot,
+        gridX: gridX,
+        gridY: gridY,
+        gridId: gridId,
+        status: status,
+        detail: detail
     }
-
-    await insertDB()
+    await insertDB(newZone)
     return newZone;
 
 }

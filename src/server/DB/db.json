@@ -1,14 +1,14 @@
 {
   "zones": [
     {
-      "name": "lorem",
-      "lat": 12.242,
-      "lot": 12.43,
-      "gridX": 123,
-      "gridY": 125,
-      "gridID": " | SEW",
-      "status": "200 | 404",
-      "detail": " | [inserted reason]"
+      "id": 1762181809803,
+      "city": "seattle",
+      "state": "wa",
+      "lat": 47.6,
+      "lot": -122.3,
+      "gridX": 126,
+      "gridY": 68,
+      "gridId": "SEW"
     }
   ]
 }
