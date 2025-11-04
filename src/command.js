@@ -52,18 +52,28 @@ yargs(hideBin(process.argv))
                 })
             } else {
                 const loc_info = result.properties;
-                // TODO: Check if the location is already saved in storage. Do not store a new zone if it already is saved.
-                await newZone(
-                    loc_info.relativeLocation.properties.city.toLowerCase(),
-                    loc_info.relativeLocation.properties.state.toLowerCase(), 
-                    args.lat, 
-                    args.lot,
-                    loc_info.gridX,
-                    loc_info.gridY,
-                    loc_info.gridId.toUpperCase(),
-                    result.status, 
-                    result.ok
-                )
+                const zoneResult = await findZone(loc_info.relativeLocation.properties.city.toLowerCase(), 
+                loc_info.relativeLocation.properties.state.toLowerCase())
+                const zone = zoneResult.pop()
+                if (zone === undefined) {
+                    await newZone(
+                        loc_info.relativeLocation.properties.city.toLowerCase(),
+                        loc_info.relativeLocation.properties.state.toLowerCase(), 
+                        args.lat, 
+                        args.lot,
+                        loc_info.gridX,
+                        loc_info.gridY,
+                        loc_info.gridId.toUpperCase(),
+                        result.status, 
+                        result.ok
+                    )
+                } else {
+                    throw new Error ("Location is already in Zone database", {
+                        cause: {
+                            reason: "Lat and Lot given already belong to a location stored in the Zone database."
+                        }
+                    })
+                }
             }
         }
     )
@@ -89,7 +99,6 @@ yargs(hideBin(process.argv))
             })
         },
         async (argv) => {
-            // TODO: Look into the DB if the location is present. Do a fetch request if it is. Process that JSON result.
             const result = await findZone(argv.city, argv.state)
             const zone = result.pop()
             if(zone === undefined) {
