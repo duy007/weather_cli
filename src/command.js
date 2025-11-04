@@ -1,6 +1,8 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { findZone, newZone } from './server/ORM/zones.js';
+import { formatForecast } from './utils.js';
+import { errorHelper } from './errorHelper.js';
 
 yargs(hideBin(process.argv))
     .command(["search <lat> <lot>", "s <lat> <lot>"], "Search for city and state. If found, save it",
@@ -17,9 +19,10 @@ yargs(hideBin(process.argv))
                     type: 'number',
                     default: -122.335167
                 }
-            )
+            ).fail((msg, err, yargs) => {
+                errorHelper(msg, err, yargs)
+            })
         }, async (args) => {
-            console.log(args.lat + " " + args.lot)
             const response = await fetch(`https://api.weather.gov/points/${args.lat},${args.lot}`, {
                 method: "GET",
                 headers: {
@@ -28,7 +31,6 @@ yargs(hideBin(process.argv))
             })
             const result = await response.json()
             if (response.status !== 200) {
-                // TODO: Clean this up with better error handling
                 await newZone(
                     "Unavailable",
                     "Unavailable",
@@ -40,6 +42,14 @@ yargs(hideBin(process.argv))
                     response.status,
                     result.detail
                 )
+                throw new Error("NWS API call was unsuccessful", {
+                    cause: {
+                        httpStatus:  response.status,
+                        title: result.title,
+                        type: result.type,
+                        detail: result.detail
+                    }
+                })
             } else {
                 const loc_info = result.properties;
                 // TODO: Check if the location is already saved in storage. Do not store a new zone if it already is saved.
@@ -75,35 +85,34 @@ yargs(hideBin(process.argv))
                 }
                 return arg.toLowerCase();
             }).fail((msg, err, yargs) => {
-                console.error('You broke it!')
-                console.error(msg)
-                console.error('You should be doing', yargs.help())
-                process.exit(1)
+                errorHelper(msg, err, yargs)
             })
         },
         async (argv) => {
             // TODO: Look into the DB if the location is present. Do a fetch request if it is. Process that JSON result.
             const result = await findZone(argv.city, argv.state)
             const zone = result.pop()
+            if(zone === undefined) {
+                throw new Error("Cannot find location with provided city and state in zone database", {
+                    cause: {
+                        reason: "Either city and/or state argument is not present in zone database."
+                    }
+                })
+            }
             const response = await fetch(`https://api.weather.gov/gridpoints/${zone.gridId}/${zone.gridX},${zone.gridY}/forecast`)
+            const forecastJson = await response.json()
             if(response.status !== 200) {
-                //TODO: Write a better error handeling when fetch call fails (server down or something else)
-                console.log("Fetch unsuccessful!")
+                throw new Error("NWS API call was unsuccessful", {
+                    cause: {
+                        httpStatus:  response.status,
+                        title: forecastJson.title,
+                        type: forecastJson.type,
+                        detail: forecastJson.detail
+                    }
+                })
             } else {
-                const forecastJson = await response.json()
                 const forecastPeroid = forecastJson.properties.periods
-                // TODO: Move clean this up and move it into its own module
-                forecastPeroid.forEach(e => {
-                    console.log(e.name)
-                    console.log(e.temperature + " " + e.temperatureUnit)
-                    console.log("Likelyhood of Rain: " + e.probabilityOfPrecipitation.value + e.probabilityOfPrecipitation.unitCode)
-                    console.log("Wind Speed: " + e.windSpeed + " " + e.windDirection)
-                    console.log("Start Time: " + `${new Date(e.startTime).toTimeString()}`)
-                    console.log("End Time: " + `${new Date(e.endTime).toTimeString()}`)
-                    console.log(e.shortForecast)
-                    console.log(e.detailedForecast)
-                    console.log()
-                });
+                formatForecast(forecastPeroid)
             }
         }
     )

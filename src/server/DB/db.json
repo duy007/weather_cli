@@ -9,6 +9,18 @@
       "gridX": 126,
       "gridY": 68,
       "gridId": "SEW"
+    },
+    {
+      "id": 1762219951777,
+      "city": "Unavailable",
+      "state": "Unavailable",
+      "lat": 51.5,
+      "lot": -0.1276,
+      "gridX": "Unavailable",
+      "gridY": "Unavailable",
+      "gridId": "Unavailable",
+      "status": 404,
+      "detail": "Unable to provide data for requested point 51.5,-0.1276"
     }
   ]
 }
