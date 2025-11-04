@@ -21,6 +21,26 @@
       "gridId": "Unavailable",
       "status": 404,
       "detail": "Unable to provide data for requested point 51.5,-0.1276"
+    },
+    {
+      "id": 1762296743851,
+      "city": "vernon",
+      "state": "ca",
+      "lat": 34.0549,
+      "lot": -118.2426,
+      "gridX": 155,
+      "gridY": 45,
+      "gridId": "LOX"
+    },
+    {
+      "id": 1762296997104,
+      "city": "west hollywood",
+      "state": "ca",
+      "lat": 34.098907,
+      "lot": -118.327759,
+      "gridX": 152,
+      "gridY": 47,
+      "gridId": "LOX"
     }
   ]
 }

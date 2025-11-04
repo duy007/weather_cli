@@ -1,7 +1,7 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { findZone, newZone } from './server/ORM/zones.js';
-import { formatForecast } from './utils.js';
+import { findZone, getAllZones, newZone } from './server/ORM/zones.js';
+import { fetchForecast, formatForecast, getAllValidZones } from './utils.js';
 import { errorHelper } from './errorHelper.js';
 
 yargs(hideBin(process.argv))
@@ -67,6 +67,8 @@ yargs(hideBin(process.argv))
                         result.status, 
                         result.ok
                     )
+                    console.log(`Saved ${loc_info.relativeLocation.properties.city.toLowerCase()}, 
+                    ${loc_info.relativeLocation.properties.city.toLowerCase()} to Zone Database`)
                 } else {
                     throw new Error ("Location is already in Zone database", {
                         cause: {
@@ -108,32 +110,55 @@ yargs(hideBin(process.argv))
                     }
                 })
             }
-            const response = await fetch(`https://api.weather.gov/gridpoints/${zone.gridId}/${zone.gridX},${zone.gridY}/forecast`)
-            const forecastJson = await response.json()
-            if(response.status !== 200) {
-                throw new Error("NWS API call was unsuccessful", {
-                    cause: {
-                        httpStatus:  response.status,
-                        title: forecastJson.title,
-                        type: forecastJson.type,
-                        detail: forecastJson.detail
-                    }
-                })
-            } else {
-                const forecastPeroid = forecastJson.properties.periods
-                formatForecast(forecastPeroid)
-            }
+            const forecasts = await fetchForecast(zone);
+            formatForecast(forecasts)
         }
     )
-    .command(["zones", "z"], "get all saved locations", () => {}, 
-        async (argv) => {
-            console.log("All Zones")
-            // TODO: Look up all the name of all saved zone.
+    .command(["zones", "z"], "get all saved locations", (yargs) => {
+        yargs.fail((msg, err, yargs) => {
+            errorHelper(msg, err, yargs)
         })
-    .command(["all", "a"], "Get the forest of all saved locations", () => {},
+    }, 
+        async (argv) => {
+            const zones = await getAllZones();
+            const validZones = getAllValidZones(zones);
+            if(validZones.length > 0) {
+                console.log("All Zones: ")
+                validZones.forEach(zone => {
+                    console.log(`${zone.city}, ${zone.state}`)
+                })
+            } else {
+                console.log("No Zone in database.")
+                throw new Error("No Zone in database.", {
+                    cause: {
+                        reason: "User has yet to input Zone into database."
+                    }
+                })
+            }
+        })
+    .command(["all", "a"], "Get the forecast of all saved locations", (yargs) => {
+        yargs.fail((msg, err, yargs) => {
+            errorHelper(msg, err, yargs)
+        })
+    },
         async (argv) => {
             console.log("All Forecast")
-            // TODO: Get the forecast of all saved zone.
+            const zones = await getAllZones();
+            const validZones = getAllValidZones(zones);
+            if(validZones.length > 0) {
+                validZones.forEach(async zone => {
+                    const forecast = await fetchForecast(zone);
+                    const shortForecast = forecast.splice(0, 2);
+                    console.log(`${zone.city}, ${zone.state}`)
+                    formatForecast(shortForecast)
+                })
+            } else {
+                throw new Error("No Zone in database to get forecasts for.", {
+                    casuse: {
+                        reason: "no Zone data availible to make NWS API call."
+                    }
+                })
+            }
         })
 .parse()
 

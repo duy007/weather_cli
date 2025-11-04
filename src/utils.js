@@ -11,3 +11,26 @@ export const formatForecast = (forecastList) => {
         console.log()
     });
 }
+
+export const getAllValidZones = (zones) => {
+    return zones.filter(zone => {
+        return zone.city !== "Unavailable" && zone.state !== "Unavailable"
+    })
+}
+
+export const fetchForecast = async (zone) => {
+    const response = await fetch(`https://api.weather.gov/gridpoints/${zone.gridId}/${zone.gridX},${zone.gridY}/forecast`)
+    const forecastJson = await response.json()
+    if (response.status !== 200) {
+        throw new Error("NWS API call was unsuccessful", {
+            cause: {
+                httpStatus:  response.status,
+                title: forecastJson.title,
+                type: forecastJson.type,
+                detail: forecastJson.detail
+            }
+        })
+    } else {
+        return forecastJson.properties.periods
+    }
+}
