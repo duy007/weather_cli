@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { findZone, getAllZones, newZone } from './server/ORM/zones.js';
+import { findZone, getAllZones, newZone, removeAllZone } from './server/ORM/zones.js';
 import { fetchForecast, formatForecast, getAllValidZones } from './utils.js';
 import { errorHelper } from './errorHelper.js';
 
@@ -19,7 +19,25 @@ yargs(hideBin(process.argv))
                     type: 'number',
                     default: -122.335167
                 }
-            ).fail((msg, err, yargs) => {
+            ).coerce("lot", (arg) => {
+                if (isNaN(arg)) {
+                    throw new RangeError("Non-number argument")
+                }
+                if(-180 > arg || arg > 180) {
+                    throw new RangeError("Longtitude value out of range")
+                }
+                return arg
+            })
+            .coerce("lat", (arg) => {
+                if (isNaN(arg)) {
+                    throw new RangeError("Non-number argument")
+                }
+                if(-90 > arg || arg > 90) {
+                    throw new RangeError("Latitude value out of range")
+                }
+                return arg
+            })
+            .fail((msg, err, yargs) => {
                 errorHelper(msg, err, yargs)
             })
         }, async (args) => {
@@ -93,7 +111,7 @@ yargs(hideBin(process.argv))
                 }
             ).coerce(['city', 'state'], (arg) => {
                 if(arg.toLowerCase() === 'unavailable') {
-                    throw new Error("Unavailable is not a valid value for city or state")
+                    throw new RangeError("Unavailable is not a valid value for city or state")
                 }
                 return arg.toLowerCase();
             }).fail((msg, err, yargs) => {
@@ -128,7 +146,6 @@ yargs(hideBin(process.argv))
                     console.log(`${zone.city}, ${zone.state}`)
                 })
             } else {
-                console.log("No Zone in database.")
                 throw new Error("No Zone in database.", {
                     cause: {
                         reason: "User has yet to input Zone into database."
@@ -160,5 +177,12 @@ yargs(hideBin(process.argv))
                 })
             }
         })
+    .command(['clean', 'wipe', 'c'], "Wipe Zone database of all saved location", 
+        () => {},
+        async (argv) => {
+            await removeAllZone();
+            console.log("cleaned")
+        }
+    )
 .parse()
 
