@@ -1,7 +1,7 @@
 {
   "zones": [
     {
-      "id": 1762386547025,
+      "id": 1762431859161,
       "city": "seattle",
       "state": "wa",
       "lat": 47.608,
@@ -9,6 +9,30 @@
       "gridX": 125,
       "gridY": 68,
       "gridId": "SEW"
+    },
+    {
+      "id": 1762431876461,
+      "city": "Unavailable",
+      "state": "Unavailable",
+      "lat": 51.2,
+      "lot": -0.1276,
+      "gridX": "Unavailable",
+      "gridY": "Unavailable",
+      "gridId": "Unavailable",
+      "status": 404,
+      "detail": "Unable to provide data for requested point 51.2,-0.1276"
+    },
+    {
+      "id": 1762431938128,
+      "city": "Unavailable",
+      "state": "Unavailable",
+      "lat": 51.2,
+      "lot": -0.1276,
+      "gridX": "Unavailable",
+      "gridY": "Unavailable",
+      "gridId": "Unavailable",
+      "status": 404,
+      "detail": "Unable to provide data for requested point 51.2,-0.1276"
     }
   ]
 }

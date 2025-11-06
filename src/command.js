@@ -3,6 +3,7 @@ import { hideBin } from 'yargs/helpers';
 import { findZone, getAllZones, newZone, removeAllZone } from './server/ORM/zones.js';
 import { fetchForecast, formatForecast, getAllValidZones } from './utils.js';
 import { errorHelper } from './errorHelper.js';
+import { forecastHelper, searchHelper, zoneHelper } from './networkHelper.js';
 
 yargs(hideBin(process.argv))
     .command(["search <lat> <lot>", "s <lat> <lot>"], "Search for city and state. If found, save it",
@@ -41,59 +42,7 @@ yargs(hideBin(process.argv))
                 errorHelper(msg, err, yargs)
             })
         }, async (args) => {
-            const response = await fetch(`https://api.weather.gov/points/${args.lat},${args.lot}`, {
-                method: "GET",
-                headers: {
-                    "accept": "application/geo+json"
-                }
-            })
-            const result = await response.json()
-            if (response.status !== 200) {
-                await newZone(
-                    "Unavailable",
-                    "Unavailable",
-                    args.lat, 
-                    args.lot,
-                    "Unavailable",
-                    "Unavailable",
-                    "Unavailable",
-                    response.status,
-                    result.detail
-                )
-                throw new Error("NWS API call was unsuccessful", {
-                    cause: {
-                        httpStatus:  response.status,
-                        title: result.title,
-                        type: result.type,
-                        detail: result.detail
-                    }
-                })
-            } else {
-                const loc_info = result.properties;
-                const zoneResult = await findZone(loc_info.relativeLocation.properties.city.toLowerCase(), 
-                loc_info.relativeLocation.properties.state.toLowerCase())
-                const zone = zoneResult.pop()
-                if (zone === undefined) {
-                    await newZone(
-                        loc_info.relativeLocation.properties.city.toLowerCase(),
-                        loc_info.relativeLocation.properties.state.toLowerCase(), 
-                        args.lat, 
-                        args.lot,
-                        loc_info.gridX,
-                        loc_info.gridY,
-                        loc_info.gridId.toUpperCase(),
-                        result.status, 
-                        result.ok
-                    )
-                    console.log(`Saved ${loc_info.relativeLocation.properties.city.toLowerCase()}, ${loc_info.relativeLocation.properties.state.toLowerCase()} to Zone Database`)
-                } else {
-                    throw new Error ("Location is already in Zone database", {
-                        cause: {
-                            reason: "Lat and Lot given already belong to a location stored in the Zone database."
-                        }
-                    })
-                }
-            }
+            await searchHelper(args)
         }
     )
     .command(["get <city> <state>", "g <city> <state>"], "Get the forecast of the given location if its lat and lot are saved in storage.", 
@@ -118,16 +67,7 @@ yargs(hideBin(process.argv))
             })
         },
         async (argv) => {
-            const result = await findZone(argv.city, argv.state)
-            const zone = result.pop()
-            if(zone === undefined) {
-                throw new Error("Cannot find location with provided city and state in zone database", {
-                    cause: {
-                        reason: "Either city and/or state argument is not present in zone database."
-                    }
-                })
-            }
-            const forecasts = await fetchForecast(zone);
+            const forecasts = await forecastHelper(argv);
             formatForecast(forecasts)
         }
     )
@@ -137,8 +77,7 @@ yargs(hideBin(process.argv))
         })
     }, 
         async (argv) => {
-            const zones = await getAllZones();
-            const validZones = getAllValidZones(zones);
+            const validZones = await zoneHelper()
             if(validZones.length > 0) {
                 console.log("All Zones: ")
                 validZones.forEach(zone => {
@@ -159,8 +98,7 @@ yargs(hideBin(process.argv))
     },
         async (argv) => {
             console.log("All Forecast")
-            const zones = await getAllZones();
-            const validZones = getAllValidZones(zones);
+            const validZones = await zoneHelper()
             if(validZones.length > 0) {
                 validZones.forEach(async zone => {
                     const forecast = await fetchForecast(zone);
