@@ -1,3 +1,14 @@
 {
-  "zones": []
+  "zones": [
+    {
+      "id": 1762386547025,
+      "city": "seattle",
+      "state": "wa",
+      "lat": 47.608,
+      "lot": -122.335,
+      "gridX": 125,
+      "gridY": 68,
+      "gridId": "SEW"
+    }
+  ]
 }

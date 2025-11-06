@@ -85,8 +85,7 @@ yargs(hideBin(process.argv))
                         result.status, 
                         result.ok
                     )
-                    console.log(`Saved ${loc_info.relativeLocation.properties.city.toLowerCase()}, 
-                    ${loc_info.relativeLocation.properties.city.toLowerCase()} to Zone Database`)
+                    console.log(`Saved ${loc_info.relativeLocation.properties.city.toLowerCase()}, ${loc_info.relativeLocation.properties.state.toLowerCase()} to Zone Database`)
                 } else {
                     throw new Error ("Location is already in Zone database", {
                         cause: {
