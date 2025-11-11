@@ -1,9 +1,10 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { findZone, getAllZones, newZone, removeAllZone } from './server/ORM/zones.js';
-import { fetchForecast, formatForecast, getAllValidZones } from './utils.js';
+import { removeAllZone } from './server/ORM/zones.js';
+import { fetchForecast, formatForecast } from './utils.js';
 import { errorHelper } from './errorHelper.js';
 import { forecastHelper, searchHelper, zoneHelper } from './networkHelper.js';
+import { startServer } from './server/server.js';
 
 yargs(hideBin(process.argv))
     .command(["search <lat> <lot>", "s <lat> <lot>"], "Search for city and state. If found, save it",
@@ -119,6 +120,20 @@ yargs(hideBin(process.argv))
         async (argv) => {
             await removeAllZone();
             console.log("cleaned")
+        }
+    )
+    .command(['web <port>', 'w <port>'], "Starts a web server to serve commands and weather data instead of using CLI", 
+        (yargs) => {
+            yargs.positional('port',
+                {
+                    type: 'number', 
+                    desc: "PORT number of the sever",
+                    default: 5000
+                }
+            )
+        },
+        async (argv) => {
+            startServer(argv.port)
         }
     )
 .parse()
